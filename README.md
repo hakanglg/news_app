@@ -1,5 +1,6 @@
 # news_app
 
+Not completed. I'm currently working on this repo
 A new Flutter project.
 
 ## Getting Started
