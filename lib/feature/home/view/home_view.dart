@@ -1,96 +1,94 @@
-// import 'package:flutter/material.dart';
-// import 'package:news_app/core/components/column/my_column.dart';
-// import 'package:news_app/core/components/row/my_row.dart';
-// import 'package:news_app/feature/home/model/news_model.dart';
-// import 'package:news_app/feature/home/service/news_service.dart';
+import 'package:flutter/material.dart';
+import 'package:news_app/feature/home/service/news_service.dart';
+import 'package:kartal/kartal.dart';
+import '../../detail/view/detail_view.dart';
+import '../model/articles_model.dart';
 
-// import '../../../core/base/base_state.dart';
+class DenemeView extends StatefulWidget {
+  const DenemeView({Key? key}) : super(key: key);
 
-// class HomeView extends StatefulWidget with BaseState {
-//   HomeView({Key? key}) : super(key: key);
+  @override
+  State<DenemeView> createState() => _DenemeViewState();
+}
 
-//   @override
-//   State<HomeView> createState() => _HomeViewState();
-// }
+class _DenemeViewState extends State<DenemeView> {
+  late final NewsService _serviceModel;
+  late Future<List<Articles>?> dataFuture;
+  @override
+  void initState() {
+    // TODO: implement initState
+    super.initState();
+    _serviceModel = NewsService();
+    dataFuture = _serviceModel.fetchNewsArticle();
+  }
 
-// class _HomeViewState extends State<HomeView> {
-//   List<NewsModel>? _items;
-//   bool _isLoading = false;
-//   late final NewsService _serviceModel;
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('Deneme'),
+      ),
+      body: FutureBuilder<List<Articles>?>(
+        future: dataFuture,
+        builder: (context, snapshot) {
+          if (snapshot.hasData == true) {
+            List<Articles>? newsArticle = snapshot.data;
+            return ListView.builder(
+                itemCount: snapshot.data?.length ?? 0,
+                itemBuilder: (context, index) {
+                  return NewsView(
+                    article: newsArticle![index],
+                  );
+                });
+          } else {
+            return const Center(
+              child: CircularProgressIndicator(),
+            );
+          }
+        },
+      ),
+    );
+  }
+}
 
-//   @override
-//   void initState() {
-//     super.initState();
-//     _serviceModel = NewsService();
-//     fetchPostItems();
-//   }
+class NewsView extends StatelessWidget {
+  final Articles article;
 
-//   void _changeLoading() {
-//     setState(() {
-//       _isLoading = !_isLoading;
-//     });
-//   }
+  const NewsView({Key? key, required this.article}) : super(key: key);
 
-//   Future<void> fetchPostItems() async {
-//     _changeLoading();
-//     _items = await _serviceModel.fetchPostItem();
-//     _changeLoading();
-//   }
-
-//   @override
-//   Widget build(BuildContext context) {
-//     return Scaffold(
-//         appBar: AppBar(
-//           centerTitle: true,
-//           title: const Text('News APP'),
-//         ),
-//         body: MyRow(
-//             child: MyColumn(
-//                 child: Column(
-//           children: [
-//             Expanded(
-//               child: ListView.builder(
-//                 itemCount: _items?.length ?? 0,
-//                 itemBuilder: (BuildContext context, int index) {
-//                   return ListTile(
-//                     title: Text(_items!.elementAt(index).author.toString()),
-//                   );
-//                 },
-//               ),
-//             ),
-//           ],
-//         ))));
-//   }
-// }
-
-
-// // Column(
-// //                     children: [
-// //                       Text("Apple's USA Business doubled in revenue in Q1",
-// //                           style: context.textTheme.headline4),
-// //                       context.emptySizedHeightBoxLow3x,
-// //                       Text(
-// //                           "Apple's USA Business doubled in revenue in Q1 Apple's USA Business doubled in revenue in Q1Apple's USA Business doubled in revenue in Q1Apple's USA Business doubled in revenue in Q1Apple's USA Business doubled in revenue in Q1",
-// //                           textAlign: TextAlign.start,
-// //                           maxLines: 4,
-// //                           style: context.textTheme.subtitle1),
-// //                       context.emptySizedHeightBoxLow3x,
-// //                       ListTile(
-// //                         leading: const Icon(
-// //                           Icons.person,
-// //                           size: 55,
-// //                         ),
-// //                         title: Text(
-// //                           "Hakan GOLGE",
-// //                           style: context.textTheme.bodyText1,
-// //                         ),
-// //                         subtitle: Text("Editor",
-// //                             style: context.textTheme.subtitle2!.copyWith(
-// //                                 color: colorConstants.darkGrey,
-// //                                 fontWeight: FontWeight.bold)),
-// //                       ),
-// //                       const Divider(
-// //                         color: Colors.black,
-// //                       )
-// //                     ],
-// //                   );
+  @override
+  Widget build(BuildContext context) {
+    return InkWell(
+      onTap: () {
+        Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => DetailView(article: article),
+            ));
+      },
+      child: Column(
+        children: [
+          SizedBox(
+            height: context.dynamicHeight(.25),
+            width: context.dynamicWidth(1),
+            child: Image.network(
+              article.urlToImage ?? "",
+              fit: BoxFit.cover,
+            ),
+          ),
+          ListTile(
+            title: Text(
+              article.title ?? "",
+              maxLines: 2,
+            ),
+            subtitle: Text(
+              article.description ?? "",
+              maxLines: 4,
+              overflow: TextOverflow.ellipsis,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
