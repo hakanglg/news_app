@@ -12,11 +12,13 @@ class DenemeView extends StatefulWidget {
 
 class _DenemeViewState extends State<DenemeView> {
   late final NewsService _serviceModel;
+  late Future<List<Articles>?> dataFuture;
   @override
   void initState() {
     // TODO: implement initState
     super.initState();
     _serviceModel = NewsService();
+    dataFuture = _serviceModel.fetchNewsArticle();
   }
 
   @override
@@ -26,36 +28,15 @@ class _DenemeViewState extends State<DenemeView> {
         title: const Text('Deneme'),
       ),
       body: FutureBuilder<List<Articles>?>(
-        future: _serviceModel.fetchNewsArticle(),
+        future: dataFuture,
         builder: (context, snapshot) {
           if (snapshot.hasData == true) {
+            List<Articles>? newsArticle = snapshot.data;
             return ListView.builder(
                 itemCount: snapshot.data?.length ?? 0,
                 itemBuilder: (context, index) {
-                  return InkWell(
-                    child: Column(
-                      children: [
-                        SizedBox(
-                          height: context.dynamicHeight(.25),
-                          width: context.dynamicWidth(1),
-                          child: Image.network(
-                            snapshot.data[index].urlToImage.toString(),
-                            fit: BoxFit.cover,
-                          ),
-                        ),
-                        ListTile(
-                          title: Text(
-                            snapshot.data[index].title.toString(),
-                            maxLines: 2,
-                          ),
-                          subtitle: Text(
-                            snapshot.data[index].description.toString(),
-                            maxLines: 4,
-                            overflow: TextOverflow.ellipsis,
-                          ),
-                        ),
-                      ],
-                    ),
+                  return NewsView(
+                    article: newsArticle![index],
                   );
                 });
           } else {
@@ -64,6 +45,42 @@ class _DenemeViewState extends State<DenemeView> {
             );
           }
         },
+      ),
+    );
+  }
+}
+
+class NewsView extends StatelessWidget {
+  final Articles article;
+
+  const NewsView({Key? key, required this.article}) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    return InkWell(
+      onTap: () {},
+      child: Column(
+        children: [
+          SizedBox(
+            height: context.dynamicHeight(.25),
+            width: context.dynamicWidth(1),
+            child: Image.network(
+              article.urlToImage ?? "",
+              fit: BoxFit.cover,
+            ),
+          ),
+          ListTile(
+            title: Text(
+              article.title ?? "",
+              maxLines: 2,
+            ),
+            subtitle: Text(
+              article.description ?? "",
+              maxLines: 4,
+              overflow: TextOverflow.ellipsis,
+            ),
+          ),
+        ],
       ),
     );
   }
